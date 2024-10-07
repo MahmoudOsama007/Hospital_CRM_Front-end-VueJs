@@ -1,8 +1,8 @@
 <template>
-    <div class="container mt-5">
+    <div class="container mt-4">
         <div class="card p-4 shadow-sm">
-            <h2 class="card-title">
-                {{ isEditing ? 'Edit Customer' : 'Add New Customer' }}
+            <h2 class="card-title mb-4 text-center">
+                {{ isEditing ? 'Edit Ticket' : 'Add New Ticket' }}
             </h2>
             <form @submit.prevent="isEditing ? updateCustomer() : submitForm()">
                 <div class="row">
@@ -185,38 +185,35 @@
                     </div>
 
                     <div class="mb-3">
-                        <h2>Call Services</h2>
-                        <div class="form-group">
-                            <label for="callService"
-                                >Select Call Service:</label
+                        <label for="callService" class="form-label"
+                            >Select Call Service:</label
+                        >
+                        <select
+                            id="callService"
+                            v-model="selectedCallServiceId"
+                            class="form-select"
+                            :disabled="!selectedCallAboutId"
+                        >
+                            <option value="" disabled>
+                                Select a call service
+                            </option>
+                            <option
+                                v-for="service in callServices"
+                                :key="service.id"
+                                :value="service.id"
                             >
-                            <select
-                                id="callService"
-                                v-model="selectedCallServiceId"
-                                class="form-select"
-                                :disabled="!selectedCallAboutId"
-                            >
-                                <option value="" disabled>
-                                    Select a call service
-                                </option>
-                                <option
-                                    v-for="service in callServices"
-                                    :key="service.id"
-                                    :value="service.id"
-                                >
-                                    {{ service.name }}
-                                </option>
-                            </select>
-                        </div>
+                                {{ service.name }}
+                            </option>
+                        </select>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">
-                    {{ isEditing ? 'Update Customer' : 'Add Customer' }}
+                <button type="submit" class="btn btn-primary mt-3">
+                    {{ isEditing ? 'Update Ticket' : 'Add Ticket' }}
                 </button>
                 <button
                     type="button"
-                    class="btn btn-secondary ms-2"
+                    class="btn btn-secondary mt-3 ms-2"
                     v-if="isEditing"
                     @click="cancelEdit"
                 >
@@ -225,147 +222,116 @@
             </form>
         </div>
 
-        <div class="container mt-5">
-            <div class="card mt-5 shadow-sm">
-                <h2 class="card-title p-3">Customer List</h2>
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Name</th>
-                            <th>Address</th>
-                            <th>City</th>
-                            <th>Area</th>
-                            <th>Company</th>
-                            <th>Phone Number</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="customer in customers" :key="customer.id">
-                            <td>{{ customer.name }}</td>
-                            <td>{{ customer.address }}</td>
-                            <td>{{ customer.cityName }}</td>
-                            <td>{{ getAreaName(customer.areaId) }}</td>
-                            <td>{{ getCompanyName(customer.companyId) }}</td>
-                            <td>{{ customer.phoneNumber }}</td>
-                            <td>
-                                <button
-                                    @click="editCustomer(customer)"
-                                    class="btn btn-warning btn-sm me-2"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    v-if="!customer.isDeleted"
-                                    @click="softDeleteCustomer(customer.id)"
-                                    class="btn btn-danger btn-sm"
-                                >
-                                    Delete
-                                </button>
-                                <button
-                                    v-if="customer.isDeleted"
-                                    @click="confirmRestoreCustomer(customer.id)"
-                                    class="btn btn-success btn-sm"
-                                >
-                                    Restore
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <nav aria-label="Page navigation example">
-                <ul class="pagination">
-                    <li
-                        class="page-item"
-                        :class="{ disabled: currentPage === 1 }"
-                    >
-                        <a
-                            class="page-link"
-                            href="#"
-                            @click.prevent="goToPage(1)"
-                            >First</a
-                        >
-                    </li>
-
-                    <li
-                        class="page-item"
-                        :class="{ disabled: currentPage === 1 }"
-                    >
-                        <a
-                            class="page-link"
-                            href="#"
-                            @click.prevent="goToPage(currentPage - 1)"
-                            >Previous</a
-                        >
-                    </li>
-
-                    <template v-for="(page, index) in pagesToShow" :key="index">
-                        <li v-if="page === '...'" class="page-item disabled">
-                            <span class="page-link">...</span>
-                        </li>
-                        <li
-                            v-else
-                            class="page-item"
-                            :class="{ active: currentPage === page }"
-                        >
-                            <a
-                                class="page-link"
-                                href="#"
-                                @click.prevent="goToPage(page)"
-                                >{{ page }}</a
+        <div class="card mt-5 shadow-sm">
+            <h2 class="card-title p-3 text-center">Customer List</h2>
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>City</th>
+                        <th>Area</th>
+                        <th>Company</th>
+                        <th>Phone Number</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="customer in customers" :key="customer.id">
+                        <td>{{ customer.name }}</td>
+                        <td>{{ customer.address }}</td>
+                        <td>{{ customer.cityName }}</td>
+                        <td>{{ getAreaName(customer.areaId) }}</td>
+                        <td>{{ getCompanyName(customer.companyId) }}</td>
+                        <td>{{ customer.phoneNumber }}</td>
+                        <td>
+                            <button
+                                @click="editCustomer(customer)"
+                                class="btn btn-warning btn-sm me-2"
                             >
-                        </li>
-                    </template>
-
-                    <!-- Current Page Display -->
-                    <li class="page-item">
-                        <span class="page-link"
-                            >Page {{ currentPage }} of {{ totalPages }}</span
-                        >
-                    </li>
-
-                    <!-- Input for Page Number -->
-                    <li class="page-item">
-                        <input
-                            type="number"
-                            v-model="inputPage"
-                            @keyup.enter="goToPage(inputPage)"
-                            class="form-control"
-                            min="1"
-                            :max="totalPages"
-                            style="width: 90px; margin: 0 10px"
-                            placeholder="Page"
-                        />
-                    </li>
-
-                    <li
-                        class="page-item"
-                        :class="{ disabled: currentPage === totalPages }"
-                    >
-                        <a
-                            class="page-link"
-                            href="#"
-                            @click.prevent="goToPage(currentPage + 1)"
-                            >Next</a
-                        >
-                    </li>
-
-                    <li
-                        class="page-item"
-                        :class="{ disabled: currentPage === totalPages }"
-                    >
-                        <a
-                            class="page-link"
-                            href="#"
-                            @click.prevent="goToPage(totalPages)"
-                            >Last</a
-                        >
-                    </li>
-                </ul>
-            </nav>
+                                Edit
+                            </button>
+                            <button
+                                v-if="!customer.isDeleted"
+                                @click="softDeleteCustomer(customer.id)"
+                                class="btn btn-danger btn-sm"
+                            >
+                                Delete
+                            </button>
+                            <button
+                                v-if="customer.isDeleted"
+                                @click="confirmRestoreCustomer(customer.id)"
+                                class="btn btn-success btn-sm"
+                            >
+                                Restore
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+
+        <nav aria-label="Page navigation example" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                    <a class="page-link" href="#" @click.prevent="goToPage(1)"
+                        >First</a
+                    >
+                </li>
+                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                    <a
+                        class="page-link"
+                        href="#"
+                        @click.prevent="goToPage(currentPage - 1)"
+                        >Previous</a
+                    >
+                </li>
+                <template v-for="(page, index) in pagesToShow" :key="index">
+                    <li v-if="page === '...'" class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    <li
+                        v-else
+                        class="page-item"
+                        :class="{ active: currentPage === page }"
+                    >
+                        <a
+                            class="page-link"
+                            href="#"
+                            @click.prevent="goToPage(page)"
+                            >{{ page }}</a
+                        >
+                    </li>
+                </template>
+                <li class="page-item">
+                    <span class="page-link"
+                        >Page {{ currentPage }} of {{ totalPages }}</span
+                    >
+                </li>
+                <li
+                    class="page-item"
+                    :class="{ disabled: currentPage === totalPages }"
+                >
+                    <a
+                        class="page-link"
+                        href="#"
+                        @click.prevent="goToPage(currentPage + 1)"
+                        >Next</a
+                    >
+                </li>
+                <li
+                    class="page-item"
+                    :class="{ disabled: currentPage === totalPages }"
+                >
+                    <a
+                        class="page-link"
+                        href="#"
+                        @click.prevent="goToPage(totalPages)"
+                        >Last</a
+                    >
+                </li>
+            </ul>
+        </nav>
     </div>
 </template>
 <script>
@@ -887,5 +853,35 @@ export default {
 
 .nav-link:hover {
     text-decoration: underline; /* Optional: Add an underline effect on hover */
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.card {
+    border: none;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+.btn {
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #0056b3; /* A darker shade for hover */
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
 }
 </style>
