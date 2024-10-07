@@ -134,83 +134,78 @@
                     />
                 </div>
 
-                <div class="mb-3">
-                    <label for="callTypeId" class="form-label"
-                        >Call Type:</label
-                    >
-                    <select
-                        v-model="selectedCallTypeId"
-                        class="form-select"
-                        required
-                        @change="fetchCallAbouts"
-                    >
-                        <option
-                            v-if="callTypes && callTypes.length === 0"
-                            disabled
+                <div class="container mt-4">
+                    <div class="mb-3">
+                        <label for="callType" class="form-label"
+                            >Select Call Type:</label
                         >
-                            No Call Types Available
-                        </option>
-                        <option
-                            v-for="callType in callTypes"
-                            :key="callType.id"
-                            :value="callType.id"
+                        <select
+                            id="callType"
+                            v-model="selectedCallTypeId"
+                            @change="fetchCallAbouts"
+                            class="form-select"
+                            required
                         >
-                            {{ callType.name }}
-                        </option>
-                    </select>
-                </div>
+                            <option value="" disabled>
+                                Select a call type
+                            </option>
+                            <option
+                                v-for="callType in callTypes"
+                                :key="callType.id"
+                                :value="callType.id"
+                            >
+                                {{ callType.name }}
+                            </option>
+                        </select>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="callAboutId" class="form-label"
-                        >Call About:</label
-                    >
-                    <select
-                        v-model="selectedCallAboutId"
-                        class="form-select"
-                        required
-                        @change="fetchCallServices"
-                        :disabled="!selectedCallTypeId"
-                    >
-                        <option
-                            v-if="callAbouts && callAbouts.length === 0"
-                            disabled
+                    <div class="mb-3">
+                        <label for="callAbout" class="form-label"
+                            >Select Call About:</label
                         >
-                            No Call Abouts Available
-                        </option>
-                        <option
-                            v-for="callAbout in callAbouts"
-                            :key="callAbout.id"
-                            :value="callAbout.id"
+                        <select
+                            id="callAbout"
+                            v-model="selectedCallAboutId"
+                            @change="fetchCallServices"
+                            :disabled="!selectedCallTypeId"
+                            class="form-select"
+                            required
                         >
-                            {{ callAbout.name }}
-                        </option>
-                    </select>
-                </div>
+                            <option value="" disabled>
+                                Select a call about
+                            </option>
+                            <option
+                                v-for="callAbout in callAbouts"
+                                :key="callAbout.id"
+                                :value="callAbout.id"
+                            >
+                                {{ callAbout.name }}
+                            </option>
+                        </select>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="callServiceId" class="form-label"
-                        >Call Service:</label
-                    >
-                    <select
-                        v-model="selectedCallServiceId"
-                        class="form-select"
-                        required
-                        :disabled="!selectedCallAboutId"
-                    >
-                        <option
-                            v-if="callServices && callServices.length === 0"
-                            disabled
-                        >
-                            No Call Services Available
-                        </option>
-                        <option
-                            v-for="callService in callServices"
-                            :key="callService.id"
-                            :value="callService.id"
-                        >
-                            {{ callService.name }}
-                        </option>
-                    </select>
+                    <div>
+                        <h2>Call Services</h2>
+                        <div class="form-group">
+                            <label for="callAbout">Select Call About:</label>
+                            <select
+                                id="callService"
+                                v-model="selectedCallServiceId"
+                                class="form-control"
+                            >
+                                <option value="" disabled>
+                                    Select a call service
+                                </option>
+                                <option
+                                    v-for="service in callServices"
+                                    :key="service.id"
+                                    :value="service.id"
+                                >
+                                    {{ service.name }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
@@ -475,37 +470,76 @@ export default {
                 console.error('Error fetching customers:', error)
             }
         },
-        async fetchCallTypes() {
-            try {
-                const response = await fetch(
-                    'http://localhost:5140/api/CallType'
-                )
-                this.callTypes = await response.json()
-            } catch (error) {
-                console.error('Error fetching call types:', error)
-            }
+        fetchCallTypes() {
+            // Fetch the call types from API
+            fetch('http://localhost:5140/api/CallType')
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(
+                            'Network response was not ok: ' +
+                                response.statusText
+                        )
+                    }
+                    return response.json()
+                })
+                .then((data) => {
+                    this.callTypes = data // Store call types
+                })
+                .catch((error) => {
+                    console.error('Error fetching call types:', error)
+                })
         },
-        async fetchCallAbouts() {
-            if (!this.selectedCallTypeId) return // Exit if no call type selected
-            try {
-                const response = await fetch(
-                    `http://localhost:5140/api/CallAbout?callTypeId=${this.selectedCallTypeId}`
+        fetchCallAbouts() {
+            if (this.selectedCallTypeId) {
+                fetch(
+                    `http://localhost:5140/api/CallAbout/calltype/${this.selectedCallTypeId}`
                 )
-                this.callAbouts = await response.json()
-            } catch (error) {
-                console.error('Error fetching call abouts:', error)
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error(
+                                'Network response was not ok: ' +
+                                    response.statusText
+                            )
+                        }
+                        return response.json()
+                    })
+                    .then((data) => {
+                        this.callAbouts = data // Store Call Abouts
+                        this.selectedCallAboutId = null // Reset selected Call About
+                        this.callServices = [] // Reset Call Services
+                        this.selectedCallServiceId = null // Reset selected Call Service
+                    })
+                    .catch((error) => {
+                        console.error('Error fetching call abouts:', error)
+                    })
+            } else {
+                this.callAbouts = [] // Reset Call Abouts if no Call Type is selected
+                this.callServices = [] // Reset Call Services
+                this.selectedCallServiceId = null // Reset selected Call Service
             }
         },
         async fetchCallServices() {
-            if (!this.selectedCallAboutId) return // Exit if no call about selected
+            if (!this.selectedCallAboutId) return // Don't fetch if no Call About is selected
+
             try {
                 const response = await fetch(
-                    `http://localhost:5140/api/CallService?callAboutId=${this.selectedCallAboutId}`
+                    `http://localhost:5140/api/CallService/callabout/${this.selectedCallAboutId}`
                 )
-                this.callServices = await response.json()
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+
+                const data = await response.json()
+                this.callServices = data // Set the call services from the response
             } catch (error) {
                 console.error('Error fetching call services:', error)
             }
+        },
+        // This function can be called when changing the selected call about
+        onCallAboutChange() {
+            this.callServices = [] // Clear services
+            this.fetchCallServices() // Fetch services based on selected call about
         },
         async submitForm() {
             try {
@@ -838,7 +872,7 @@ export default {
     mounted() {
         // Fetch call types and call abouts on mount
         this.fetchCallTypes()
-        this.fetchCallAbouts()
+        // this.fetchCallAbouts()
     },
 }
 </script>
