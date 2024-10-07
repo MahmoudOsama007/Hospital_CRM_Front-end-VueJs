@@ -184,14 +184,17 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div class="mb-3">
                         <h2>Call Services</h2>
                         <div class="form-group">
-                            <label for="callAbout">Select Call About:</label>
+                            <label for="callService"
+                                >Select Call Service:</label
+                            >
                             <select
                                 id="callService"
                                 v-model="selectedCallServiceId"
-                                class="form-control"
+                                class="form-select"
+                                :disabled="!selectedCallAboutId"
                             >
                                 <option value="" disabled>
                                     Select a call service
