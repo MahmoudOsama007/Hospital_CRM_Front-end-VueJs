@@ -166,7 +166,13 @@
                         <tr v-for="customer in customers" :key="customer.id">
                             <td>{{ customer.name }}</td>
                             <td>{{ customer.address }}</td>
-                            <td>{{ customer.cityName }}</td>
+                            <td>
+                                {{
+                                    getCityName(
+                                        getCityIdFromArea(customer.areaId)
+                                    )
+                                }}
+                            </td>
                             <td>{{ getAreaName(customer.areaId) }}</td>
                             <td>{{ getCompanyName(customer.companyId) }}</td>
                             <td>{{ customer.phoneNumber }}</td>
@@ -348,6 +354,10 @@
 </template>
 <script>
 export default {
+    mounted() {
+        this.loadCitiesAndAreas() // Ensure you're loading them here
+        this.loadCustomers()
+    },
     data() {
         return {
             isEditing: false,
@@ -383,6 +393,38 @@ export default {
     },
 
     methods: {
+        async loadCustomers() {
+            try {
+                const response = await fetch(
+                    'http://localhost:5140/api/customers'
+                ) // Replace with your API endpoint
+                if (!response.ok) {
+                    throw new Error('Network response was not ok')
+                }
+                this.customers = await response.json()
+            } catch (error) {
+                console.error('Error loading customers:', error)
+            }
+        },
+        async loadCitiesAndAreas() {
+            try {
+                const citiesResponse = await fetch(
+                    'http://localhost:5140/api/city'
+                ) // Replace with your API endpoint
+                const areasResponse = await fetch(
+                    'http://localhost:5140/api/area'
+                ) // Replace with your API endpoint
+
+                if (!citiesResponse.ok || !areasResponse.ok) {
+                    throw new Error('Network response was not ok')
+                }
+
+                this.cities = await citiesResponse.json()
+                this.allAreas = await areasResponse.json()
+            } catch (error) {
+                console.error('Error loading cities and areas:', error)
+            }
+        },
         async fetchCities() {
             const response = await fetch('http://localhost:5140/api/city')
             this.cities = await response.json()
@@ -592,7 +634,6 @@ export default {
             const city = this.cities.find((c) => c.id === cityId)
             return city ? city.name : 'Unknown City'
         },
-
         getAreaName(areaId) {
             const area = this.allAreas.find((a) => a.id === areaId)
             return area ? area.name : 'Unknown Area'
