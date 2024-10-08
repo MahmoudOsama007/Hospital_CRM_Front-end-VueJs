@@ -1,228 +1,322 @@
 <template>
     <div class="container mt-4">
         <div class="card p-4 shadow-sm">
-            <h2 class="card-title mb-4 text-center">
-                {{ isEditing ? 'Edit Ticket' : 'Add New Ticket' }}
-            </h2>
+            <form>
+                <div class="mb-4">
+                    <h3>Customer Details</h3>
+                    <hr />
+                    <!-- Optional: adds a horizontal line for separation -->
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Name:</label>
+                            <input
+                                type="text"
+                                id="name"
+                                v-model="customerData.name"
+                                class="form-control"
+                                disabled
+                            />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="address" class="form-label"
+                                >Address:</label
+                            >
+                            <input
+                                type="text"
+                                id="address"
+                                v-model="customerData.address"
+                                class="form-control"
+                                disabled
+                            />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="phoneNumber" class="form-label"
+                                >Phone Number:</label
+                            >
+                            <input
+                                type="text"
+                                id="phoneNumber"
+                                v-model="customerData.phoneNumber"
+                                class="form-control"
+                                disabled
+                            />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="otherPhoneNumber" class="form-label"
+                                >Other Phone Number:</label
+                            >
+                            <input
+                                type="text"
+                                id="otherPhoneNumber"
+                                v-model="customerData.otherPhoneNumber"
+                                class="form-control"
+                                disabled
+                            />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="landLineNumber" class="form-label"
+                                >Landline Number:</label
+                            >
+                            <input
+                                type="text"
+                                id="landLineNumber"
+                                v-model="customerData.landLineNumber"
+                                class="form-control"
+                                disabled
+                            />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="patientNumber" class="form-label"
+                            >Patient Number:</label
+                        >
+                        <input
+                            type="text"
+                            id="patientNumber"
+                            v-model="customerData.patientNumber"
+                            class="form-control"
+                            disabled
+                        />
+                    </div>
+                </div>
+            </form>
+
+            <br /><br /><br />
+
             <form @submit.prevent="isEditing ? updateCustomer() : submitForm()">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="name" class="form-label">Name:</label>
-                        <input
-                            type="text"
-                            id="name"
-                            v-model="customerData.name"
-                            class="form-control"
-                            required
-                        />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="address" class="form-label">Address:</label>
-                        <input
-                            type="text"
-                            id="address"
-                            v-model="customerData.address"
-                            class="form-control"
-                            required
-                        />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="city" class="form-label">City:</label>
-                        <select
-                            id="city"
-                            v-model="customerData.cityId"
-                            @change="fetchAreas"
-                            class="form-select"
-                            required
-                        >
-                            <option value="" disabled>Select a city</option>
-                            <option
-                                v-for="city in cities"
-                                :key="city.id"
-                                :value="city.id"
-                            >
-                                {{ city.name }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="area" class="form-label">Area:</label>
-                        <select
-                            id="area"
-                            v-model="customerData.areaId"
-                            :disabled="!customerData.cityId"
-                            class="form-select"
-                            required
-                        >
-                            <option value="" disabled>Select an area</option>
-                            <option
-                                v-for="area in filteredAreas"
-                                :key="area.id"
-                                :value="area.id"
-                            >
-                                {{ area.name }}
-                            </option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="company" class="form-label">Company:</label>
-                        <select
-                            id="company"
-                            v-model="customerData.companyId"
-                            class="form-select"
-                            required
-                        >
-                            <option value="" disabled>Select a company</option>
-                            <option
-                                v-for="company in companies"
-                                :key="company.id"
-                                :value="company.id"
-                            >
-                                {{ company.name }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="phoneNumber" class="form-label"
-                            >Phone Number:</label
-                        >
-                        <input
-                            type="text"
-                            id="phoneNumber"
-                            v-model="customerData.phoneNumber"
-                            class="form-control"
-                        />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="otherPhoneNumber" class="form-label"
-                            >Other Phone Number:</label
-                        >
-                        <input
-                            type="text"
-                            id="otherPhoneNumber"
-                            v-model="customerData.otherPhoneNumber"
-                            class="form-control"
-                        />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="landLineNumber" class="form-label"
-                            >Landline Number:</label
-                        >
-                        <input
-                            type="text"
-                            id="landLineNumber"
-                            v-model="customerData.landLineNumber"
-                            class="form-control"
-                        />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="patientNumber" class="form-label"
-                        >Patient Number:</label
-                    >
-                    <input
-                        type="text"
-                        id="patientNumber"
-                        v-model="customerData.patientNumber"
-                        class="form-control"
-                    />
-                </div>
-
                 <div class="container mt-4">
-                    <div class="mb-3">
-                        <label for="callType" class="form-label"
-                            >Select Call Type:</label
-                        >
-                        <select
-                            id="callType"
-                            v-model="selectedCallTypeId"
-                            @change="fetchCallAbouts"
-                            class="form-select"
-                            required
-                        >
-                            <option value="" disabled>
-                                Select a call type
-                            </option>
-                            <option
-                                v-for="callType in callTypes"
-                                :key="callType.id"
-                                :value="callType.id"
+                    <h4 class="mb-3">Ticket Details</h4>
+                    <hr />
+                    <!-- Optional: adds a horizontal line for separation -->
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="callType" class="form-label"
+                                >Select Call Type:</label
                             >
-                                {{ callType.name }}
-                            </option>
-                        </select>
+                            <select
+                                id="callType"
+                                v-model="selectedCallTypeId"
+                                @change="fetchCallAbouts"
+                                class="form-select"
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select a call type
+                                </option>
+                                <option
+                                    v-for="callType in callTypes"
+                                    :key="callType.id"
+                                    :value="callType.id"
+                                >
+                                    {{ callType.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="callAbout" class="form-label"
+                                >Select Call About:</label
+                            >
+                            <select
+                                id="callAbout"
+                                v-model="selectedCallAboutId"
+                                @change="fetchCallServices"
+                                :disabled="!selectedCallTypeId"
+                                class="form-select"
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select a call about
+                                </option>
+                                <option
+                                    v-for="callAbout in callAbouts"
+                                    :key="callAbout.id"
+                                    :value="callAbout.id"
+                                >
+                                    {{ callAbout.name }}
+                                </option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="callAbout" class="form-label"
-                            >Select Call About:</label
-                        >
-                        <select
-                            id="callAbout"
-                            v-model="selectedCallAboutId"
-                            @change="fetchCallServices"
-                            :disabled="!selectedCallTypeId"
-                            class="form-select"
-                            required
-                        >
-                            <option value="" disabled>
-                                Select a call about
-                            </option>
-                            <option
-                                v-for="callAbout in callAbouts"
-                                :key="callAbout.id"
-                                :value="callAbout.id"
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="callService" class="form-label"
+                                >Select Call Service:</label
                             >
-                                {{ callAbout.name }}
-                            </option>
-                        </select>
+                            <select
+                                id="callService"
+                                v-model="selectedCallServiceId"
+                                class="form-select"
+                                :disabled="!selectedCallAboutId"
+                            >
+                                <option value="" disabled>
+                                    Select a call service
+                                </option>
+                                <option
+                                    v-for="service in callServices"
+                                    :key="service.id"
+                                    :value="service.id"
+                                >
+                                    {{ service.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="hospital" class="form-label"
+                                >Select Hospital:</label
+                            >
+                            <select
+                                id="hospital"
+                                v-model="customerData.hospitalId"
+                                @change="loadMajorSpecialists"
+                                class="form-select"
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select a hospital
+                                </option>
+                                <option
+                                    v-for="hospital in hospitals"
+                                    :key="hospital.id"
+                                    :value="hospital.id"
+                                >
+                                    {{ hospital.name }}
+                                </option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="callService" class="form-label"
-                            >Select Call Service:</label
-                        >
-                        <select
-                            id="callService"
-                            v-model="selectedCallServiceId"
-                            class="form-select"
-                            :disabled="!selectedCallAboutId"
-                        >
-                            <option value="" disabled>
-                                Select a call service
-                            </option>
-                            <option
-                                v-for="service in callServices"
-                                :key="service.id"
-                                :value="service.id"
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="majorSpecialist" class="form-label"
+                                >Select Major Specialist:</label
                             >
-                                {{ service.name }}
-                            </option>
-                        </select>
+                            <select
+                                id="majorSpecialist"
+                                v-model="customerData.majorSpecialistId"
+                                @change="loadMinorSpecialists"
+                                class="form-select"
+                                :disabled="!customerData.hospitalId"
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select a major specialist
+                                </option>
+                                <option
+                                    v-for="majorSpecialist in majorSpecialists"
+                                    :key="majorSpecialist.id"
+                                    :value="majorSpecialist.id"
+                                >
+                                    {{ majorSpecialist.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="minorSpecialist" class="form-label"
+                                >Select Minor Specialist:</label
+                            >
+                            <select
+                                id="minorSpecialist"
+                                v-model="customerData.minorSpecialistId"
+                                @change="loadVerySpecificSpecialists"
+                                class="form-select"
+                                :disabled="!customerData.majorSpecialistId"
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select a minor specialist
+                                </option>
+                                <option
+                                    v-for="minorSpecialist in minorSpecialists"
+                                    :key="minorSpecialist.id"
+                                    :value="minorSpecialist.id"
+                                >
+                                    {{ minorSpecialist.name }}
+                                </option>
+                            </select>
+                        </div>
                     </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label
+                                for="verySpecificSpecialist"
+                                class="form-label"
+                                >Select Very Specific Specialist:</label
+                            >
+                            <select
+                                id="verySpecificSpecialist"
+                                v-model="customerData.verySpecificSpecialistId"
+                                @change="loadDoctors"
+                                class="form-select"
+                                :disabled="!customerData.minorSpecialistId"
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select a very specific specialist
+                                </option>
+                                <option
+                                    v-for="verySpecificSpecialist in verySpecificSpecialists"
+                                    :key="verySpecificSpecialist.id"
+                                    :value="verySpecificSpecialist.id"
+                                >
+                                    {{ verySpecificSpecialist.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="doctor" class="form-label"
+                                >Select Doctor:</label
+                            >
+                            <select
+                                id="doctor"
+                                v-model="customerData.doctorId"
+                                class="form-select"
+                                :disabled="
+                                    !customerData.verySpecificSpecialistId
+                                "
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select a doctor
+                                </option>
+                                <option
+                                    v-for="doctor in doctors"
+                                    :key="doctor.id"
+                                    :value="doctor.id"
+                                >
+                                    {{ doctor.name }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-3">
+                        {{ isEditing ? 'Update Ticket' : 'Add Ticket' }}
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-secondary mt-3 ms-2"
+                        v-if="isEditing"
+                        @click="cancelEdit"
+                    >
+                        Cancel
+                    </button>
                 </div>
-
-                <button type="submit" class="btn btn-primary mt-3">
-                    {{ isEditing ? 'Update Ticket' : 'Add Ticket' }}
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-secondary mt-3 ms-2"
-                    v-if="isEditing"
-                    @click="cancelEdit"
-                >
-                    Cancel
-                </button>
             </form>
         </div>
 
-        <div class="card mt-5 shadow-sm">
+        <!-- <div class="card mt-5 shadow-sm">
             <h2 class="card-title p-3 text-center">Customer List</h2>
             <table class="table table-striped table-hover">
                 <thead class="table-dark">
@@ -331,20 +425,31 @@
                     >
                 </li>
             </ul>
-        </nav>
+        </nav> -->
     </div>
 </template>
 <script>
 export default {
     data() {
         return {
+            customerData: {
+                hospitalId: null,
+                majorSpecialistId: null,
+                minorSpecialistId: null,
+                doctorId: null,
+                // other fields...
+            },
+            hospitals: [],
+            majorSpecialists: [],
+            minorSpecialists: [],
+            doctors: [],
             isEditing: false,
             customerIdToEdit: null,
             items: [],
             currentPage: 1,
             itemsPerPage: 6,
             totalPages: 0,
-            customerData: {
+            customerData2: {
                 name: '',
                 address: '',
                 areaId: null,
@@ -354,6 +459,7 @@ export default {
                 landLineNumber: '',
                 patientNumber: '',
                 cityId: null,
+                verySpecificSpecialistId: null,
             },
             cities: [],
             filteredAreas: [],
@@ -364,6 +470,8 @@ export default {
             callTypes: [],
             callAbouts: [],
             callServices: [],
+            verySpecificSpecialists: [],
+
             selectedCallTypeId: null,
             selectedCallAboutId: null,
             selectedCallServiceId: null,
@@ -375,9 +483,7 @@ export default {
                 name: '',
                 callAboutId: null,
             },
-            //selectedCallTypeId: null,
             filteredCallAbouts: [],
-
             isLoading: false, // New loading state
         }
     },
@@ -386,13 +492,224 @@ export default {
         this.fetchCities()
         this.fetchCompanies()
         this.fetchCustomers(this.currentPage, this.itemsPerPage)
-        //  this.loadCallAbouts()
-        //  this.loadCallTypes()
-        // this.loadCallServices()
         this.fetchCallTypes()
+        this.loadHospitals()
+        this.loadMajorSpecialists()
+        this.loadMinorSpecialists()
+        this.loadDoctors()
     },
 
     methods: {
+        async fetchMajorSpecialistsByHospital(hospitalId) {
+            if (!hospitalId) {
+                this.majorSpecialists = [] // Reset if no hospitalId is provided
+                return
+            }
+
+            try {
+                const response = await fetch(
+                    `http://localhost:5140/api/majorspecialist/hospital/${hospitalId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                'token'
+                            )}`,
+                        },
+                    }
+                )
+
+                if (!response.ok) {
+                    throw new Error(
+                        'Failed to fetch major specialists: ' +
+                            response.statusText
+                    )
+                }
+
+                const data = await response.json()
+                this.majorSpecialists = data // Store the fetched major specialists
+            } catch (error) {
+                console.error(
+                    'Error fetching major specialists by hospital:',
+                    error
+                )
+            }
+        },
+
+        // Call this method when a hospital is selected, for example:
+        onHospitalChange(selectedHospitalId) {
+            this.fetchMajorSpecialistsByHospital(selectedHospitalId)
+        },
+        fetchWithAuth(url) {
+            return fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            }).then((response) => {
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch: ${response.statusText}`)
+                }
+                return response.json()
+            })
+        },
+
+        loadHospitals() {
+            this.isLoading = true // Set loading state
+            this.fetchWithAuth('http://localhost:5140/api/Hospital')
+                .then((data) => {
+                    this.hospitals = data
+                })
+                .catch((error) => {
+                    console.error('Error loading hospitals:', error)
+                })
+                .finally(() => {
+                    this.isLoading = false // Reset loading state
+                })
+        },
+
+        async loadMajorSpecialists() {
+            const hospitalId = this.customerData.hospitalId
+
+            if (!hospitalId) {
+                this.majorSpecialists = [] // Reset the major specialists list if no hospital is selected
+                return
+            }
+
+            try {
+                // Fetch major specialists related to the selected hospital
+                const response = await fetch(
+                    `http://localhost:5140/api/majorspecialist/hospital/${hospitalId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                'token'
+                            )}`, // Include token for authorization if needed
+                        },
+                    }
+                )
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to fetch major specialists: ${response.statusText}`
+                    )
+                }
+
+                const data = await response.json()
+                this.majorSpecialists = data // Store the fetched major specialists
+            } catch (error) {
+                console.error('Error fetching major specialists:', error)
+                this.majorSpecialists = [] // Reset the list in case of an error
+            }
+        },
+
+        loadMinorSpecialists() {
+            const majorSpecialistId = this.customerData.majorSpecialistId
+
+            if (!majorSpecialistId) {
+                this.minorSpecialists = [] // Reset the minor specialists list if no major specialist is selected
+                return
+            }
+
+            this.isLoading = true // Set loading state
+
+            // Fetch minor specialists related to the selected major specialist
+            fetch(
+                `http://localhost:5140/api/MinorSpecialist/bymajorspecialist/${majorSpecialistId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            'token'
+                        )}`, // Include token for authorization
+                    },
+                }
+            )
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch minor specialists')
+                    }
+                    return response.json()
+                })
+                .then((data) => {
+                    this.minorSpecialists = data // Store the fetched minor specialists
+                })
+                .catch((error) => {
+                    console.error('Error loading minor specialists:', error)
+                    this.minorSpecialists = [] // Reset the list in case of an error
+                })
+                .finally(() => {
+                    this.isLoading = false // Reset loading state
+                })
+        },
+        async loadVerySpecificSpecialists() {
+            const minorSpecialistId = this.customerData.minorSpecialistId
+
+            if (!minorSpecialistId) {
+                this.verySpecificSpecialists = []
+                return
+            }
+
+            try {
+                const response = await fetch(
+                    `http://localhost:5140/api/veryspecificspecialist/byminorspecialist/${minorSpecialistId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                'token'
+                            )}`,
+                        },
+                    }
+                )
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch very specific specialists')
+                }
+
+                const data = await response.json()
+                this.verySpecificSpecialists = data
+            } catch (error) {
+                console.error(error)
+                this.verySpecificSpecialists = []
+            }
+        },
+        async loadDoctors() {
+            this.isLoading = true // Set loading state
+            const verySpecificSpecialistId =
+                this.customerData.verySpecificSpecialistId // Get the selected VerySpecificSpecialistId
+
+            // Check if a VerySpecificSpecialistId is selected
+            if (!verySpecificSpecialistId) {
+                this.doctors = [] // Clear doctors if no VerySpecificSpecialistId is selected
+                this.isLoading = false // Reset loading state
+                return
+            }
+
+            try {
+                // Use the selected VerySpecificSpecialistId to fetch doctors
+                const response = await fetch(
+                    `http://localhost:5140/api/Doctor/byveryspecificspecialist/${verySpecificSpecialistId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                'token'
+                            )}`, // Add authorization token
+                        },
+                    }
+                )
+
+                // Check if the response is okay
+                if (!response.ok) {
+                    throw new Error('Failed to fetch doctors')
+                }
+
+                const data = await response.json() // Parse the JSON response
+                this.doctors = data // Store the fetched doctors
+            } catch (error) {
+                console.error('Error loading doctors:', error)
+                this.doctors = [] // Clear doctors on error
+            } finally {
+                this.isLoading = false // Reset loading state
+            }
+        },
+
         async fetchCities() {
             const response = await fetch('http://localhost:5140/api/city')
             this.cities = await response.json()
@@ -823,6 +1140,42 @@ export default {
                 (callAbout) => callAbout.id === callAboutId
             )
             return callAbout ? callAbout.name : 'Unknown'
+        },
+        async fetchHospitals() {
+            try {
+                const response = await fetch('/api/medical/hospitals')
+                if (!response.ok) throw new Error('Network response was not ok')
+                this.hospitals = await response.json()
+            } catch (error) {
+                console.error('Error fetching hospitals:', error)
+            }
+        },
+        async fetchMajorSpecialists() {
+            try {
+                const response = await fetch(`/api/medical/majorspecialists`)
+                if (!response.ok) throw new Error('Network response was not ok')
+                this.majorSpecialists = await response.json()
+            } catch (error) {
+                console.error('Error fetching major specialists:', error)
+            }
+        },
+        async fetchMinorSpecialists() {
+            try {
+                const response = await fetch(`/api/medical/minorspecialists`)
+                if (!response.ok) throw new Error('Network response was not ok')
+                this.minorSpecialists = await response.json()
+            } catch (error) {
+                console.error('Error fetching minor specialists:', error)
+            }
+        },
+        async fetchDoctors() {
+            try {
+                const response = await fetch(`/api/medical/doctors`)
+                if (!response.ok) throw new Error('Network response was not ok')
+                this.doctors = await response.json()
+            } catch (error) {
+                console.error('Error fetching doctors:', error)
+            }
         },
     },
     watch: {
