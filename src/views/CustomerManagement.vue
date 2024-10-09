@@ -197,6 +197,12 @@
                                 >
                                     Restore
                                 </button>
+                                <button
+                                    @click="goToDetail(customer.id)"
+                                    class="btn btn-success btn-sm ml-2"
+                                >
+                                    Add Ticket
+                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -393,10 +399,22 @@ export default {
     },
 
     methods: {
+        goToDetail(id) {
+            console.log('Item being passed:', id) // Log the item
+            this.$router
+                .push({ name: 'NewTicket', params: { id: id } })
+                .then(() => {
+                    console.log('Navigation successful')
+                })
+                .catch((err) => {
+                    console.error('Navigation error:', err)
+                })
+        },
+
         async loadCustomers() {
             try {
                 const response = await fetch(
-                    'http://localhost:5140/api/customers'
+                    'http://localhost:5140/api/customer'
                 ) // Replace with your API endpoint
                 if (!response.ok) {
                     throw new Error('Network response was not ok')

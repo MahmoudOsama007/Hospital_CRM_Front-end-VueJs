@@ -107,10 +107,11 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
-        path: '/new-ticket',
+        path: '/new-ticket/:id',
         name: 'NewTicket',
         component: NewTicket,
         meta: { requiresAuth: true },
+        props: true,
     },
 ]
 

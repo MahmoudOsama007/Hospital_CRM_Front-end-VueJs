@@ -5,7 +5,6 @@
                 <div class="mb-4">
                     <h3>Customer Details</h3>
                     <hr />
-                    <!-- Optional: adds a horizontal line for separation -->
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -85,6 +84,7 @@
                     </div>
                 </div>
             </form>
+            <p>Customer Id : {{ id }}</p>
 
             <br /><br /><br />
 
@@ -92,7 +92,6 @@
                 <div class="container mt-4">
                     <h4 class="mb-3">Ticket Details</h4>
                     <hr />
-                    <!-- Optional: adds a horizontal line for separation -->
 
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -437,6 +436,14 @@ export default {
                 majorSpecialistId: null,
                 minorSpecialistId: null,
                 doctorId: null,
+                customerId: 1,
+                item: null, // This will hold the passed item data
+                name: '',
+                address: '',
+                phoneNumber: '',
+                otherPhoneNumber: '',
+                landLineNumber: '',
+                patientNumber: '',
                 // other fields...
             },
             hospitals: [],
@@ -449,29 +456,11 @@ export default {
             currentPage: 1,
             itemsPerPage: 6,
             totalPages: 0,
-            customerData2: {
-                name: '',
-                address: '',
-                areaId: null,
-                companyId: null,
-                phoneNumber: '',
-                otherPhoneNumber: '',
-                landLineNumber: '',
-                patientNumber: '',
-                cityId: null,
-                verySpecificSpecialistId: null,
-            },
-            cities: [],
-            filteredAreas: [],
-            companies: [],
-            customers: [],
-            allAreas: [],
-            customerCityNames: {},
             callTypes: [],
             callAbouts: [],
             callServices: [],
             verySpecificSpecialists: [],
-
+            customers: [],
             selectedCallTypeId: null,
             selectedCallAboutId: null,
             selectedCallServiceId: null,
@@ -484,22 +473,139 @@ export default {
                 callAboutId: null,
             },
             filteredCallAbouts: [],
-            isLoading: false, // New loading state
+            isLoading: false,
         }
     },
 
     created() {
-        this.fetchCities()
-        this.fetchCompanies()
-        this.fetchCustomers(this.currentPage, this.itemsPerPage)
+        //  this.fetchCities()
+        //  this.fetchCompanies()
+        //    this.fetchCustomers(this.currentPage, this.itemsPerPage)
+        console.log(this.item)
         this.fetchCallTypes()
         this.loadHospitals()
         this.loadMajorSpecialists()
         this.loadMinorSpecialists()
         this.loadDoctors()
+        this.fetchCustomerData()
+        console.log(this.item) // Optional: Log the item data to the console
+    },
+    props: {
+        id: {
+            type: Number,
+            required: true,
+        },
     },
 
     methods: {
+        async fetchCustomerData() {
+            // Use the id prop to fetch customer data
+            try {
+                const response = await fetch(
+                    `http://localhost:5140/api/Customer/${this.id}`
+                )
+
+                // Check if the response is ok (status in the range 200-299)
+                if (!response.ok) {
+                    throw new Error('Network response was not ok')
+                }
+
+                const data = await response.json()
+
+                // Assign the fetched data to the customerData object
+                this.customerData = data
+            } catch (error) {
+                console.error('Error fetching customer data:', error)
+            }
+        },
+        submitForm() {
+            console.log('Submitting form with data:', {
+                selectedCallTypeId: this.selectedCallTypeId,
+                selectedCallAboutId: this.selectedCallAboutId,
+                selectedCallServiceId: this.selectedCallServiceId,
+                AssignedHospitalId: this.customerData.hospitalId,
+                majorSpecialistId: this.customerData.majorSpecialistId,
+                minorSpecialistId: this.customerData.minorSpecialistId,
+                verySpecificSpecialistId:
+                    this.customerData.verySpecificSpecialistId,
+                doctorId: this.customerData.doctorId,
+                customerId: this.id,
+                CustomerName: this.customerData.name,
+            })
+
+            // Prepare your payload
+            const payload = {
+                callTypeId: this.selectedCallTypeId,
+                callAboutId: this.selectedCallAboutId,
+                callServiceId: this.selectedCallServiceId,
+                AssignedHospitalId: this.customerData.hospitalId,
+                majorSpecialistId: this.customerData.majorSpecialistId,
+                minorSpecialistId: this.customerData.minorSpecialistId,
+                verySpecificSpecialistId:
+                    this.customerData.verySpecificSpecialistId,
+                doctorId: this.customerData.doctorId,
+                customerId: this.id,
+                CustomerName: this.customerData.name,
+            }
+
+            // Use fetch to make your API call
+            fetch('http://localhost:5140/api/Ticket', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify(payload),
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(
+                            'Network response was not ok: ' +
+                                response.statusText
+                        )
+                    }
+                    return response.json()
+                })
+                .then((data) => {
+                    console.log('Ticket created successfully:', data)
+                    // Handle successful response
+                    // Reset form or perform additional actions here
+                })
+                .catch((error) => {
+                    console.error('Error submitting form:', error)
+                })
+        },
+        async updateCustomer() {
+            try {
+                const response = await fetch(
+                    `http://localhost:5140/api/Ticket/${this.customerIdToEdit}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem(
+                                'token'
+                            )}`,
+                        },
+                        body: JSON.stringify(this.customerData),
+                    }
+                )
+
+                if (!response.ok) {
+                    const errorData = await response.json()
+                    throw new Error(
+                        errorData.message || 'Error updating ticket'
+                    )
+                }
+
+                this.resetForm()
+                alert('Ticket updated successfully!')
+                await this.fetchCustomers() // Refresh ticket list
+            } catch (error) {
+                console.error('Error updating ticket:', error)
+                alert('Error updating ticket: ' + error.message)
+            }
+        },
         async fetchMajorSpecialistsByHospital(hospitalId) {
             if (!hospitalId) {
                 this.majorSpecialists = [] // Reset if no hospitalId is provided
@@ -710,52 +816,52 @@ export default {
             }
         },
 
-        async fetchCities() {
-            const response = await fetch('http://localhost:5140/api/city')
-            this.cities = await response.json()
-        },
+        // async fetchCities() {
+        //     const response = await fetch('http://localhost:5140/api/city')
+        //     this.cities = await response.json()
+        // },
 
-        async fetchAreas() {
-            const response = await fetch('http://localhost:5140/api/area')
-            this.allAreas = await response.json()
-            if (this.customerData.cityId) {
-                this.filteredAreas = this.allAreas.filter(
-                    (area) => area.cityId === this.customerData.cityId
-                )
-            } else {
-                this.filteredAreas = []
-                this.customerData.areaId = null
-            }
-        },
+        // async fetchAreas() {
+        //     const response = await fetch('http://localhost:5140/api/area')
+        //     this.allAreas = await response.json()
+        //     if (this.customerData.cityId) {
+        //         this.filteredAreas = this.allAreas.filter(
+        //             (area) => area.cityId === this.customerData.cityId
+        //         )
+        //     } else {
+        //         this.filteredAreas = []
+        //         this.customerData.areaId = null
+        //     }
+        // },
 
-        async fetchCompanies() {
-            const response = await fetch('http://localhost:5140/api/company')
-            this.companies = await response.json()
-        },
+        // async fetchCompanies() {
+        //     const response = await fetch('http://localhost:5140/api/company')
+        //     this.companies = await response.json()
+        // },
 
-        async fetchCustomers(
-            page = this.currentPage,
-            limit = this.itemsPerPage
-        ) {
-            try {
-                const response = await fetch(
-                    `http://localhost:5140/api/Customer/page/${page}/limit/${limit}`,
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem(
-                                'token'
-                            )}`,
-                        },
-                    }
-                )
-                const data = await response.json()
-                this.customers = data.customers // Ensure this matches your API response structure
-                this.totalPages = data.totalPages // Update based on API response
-            } catch (error) {
-                console.error('Error fetching customers:', error)
-            }
-        },
+        // async fetchCustomers(
+        //     page = this.currentPage,
+        //     limit = this.itemsPerPage
+        // ) {
+        //     try {
+        //         const response = await fetch(
+        //             `http://localhost:5140/api/Customer/page/${page}/limit/${limit}`,
+        //             {
+        //                 headers: {
+        //                     'Content-Type': 'application/json',
+        //                     Authorization: `Bearer ${localStorage.getItem(
+        //                         'token'
+        //                     )}`,
+        //                 },
+        //             }
+        //         )
+        //         const data = await response.json()
+        //         this.customers = data.customers // Ensure this matches your API response structure
+        //         this.totalPages = data.totalPages // Update based on API response
+        //     } catch (error) {
+        //         console.error('Error fetching customers:', error)
+        //     }
+        // },
         fetchCallTypes() {
             // Fetch the call types from API
             fetch('http://localhost:5140/api/CallType')
@@ -827,37 +933,37 @@ export default {
             this.callServices = [] // Clear services
             this.fetchCallServices() // Fetch services based on selected call about
         },
-        async submitForm() {
-            try {
-                const response = await fetch(
-                    'http://localhost:5140/api/customer',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem(
-                                'token'
-                            )}`,
-                        },
-                        body: JSON.stringify(this.customerData),
-                    }
-                )
+        // async submitForm() {
+        //     try {
+        //         const response = await fetch(
+        //             'http://localhost:5140/api/customer',
+        //             {
+        //                 method: 'POST',
+        //                 headers: {
+        //                     'Content-Type': 'application/json',
+        //                     Authorization: `Bearer ${localStorage.getItem(
+        //                         'token'
+        //                     )}`,
+        //                 },
+        //                 body: JSON.stringify(this.customerData),
+        //             }
+        //         )
 
-                if (!response.ok) {
-                    const errorData = await response.json()
-                    throw new Error(
-                        errorData.message || 'Error submitting form'
-                    )
-                }
+        //         if (!response.ok) {
+        //             const errorData = await response.json()
+        //             throw new Error(
+        //                 errorData.message || 'Error submitting form'
+        //             )
+        //         }
 
-                this.resetForm()
-                alert('Customer added successfully!')
-                await this.fetchCustomers() // Refresh customer list
-            } catch (error) {
-                console.error('Error submitting form:', error)
-                alert('Error adding customer: ' + error.message)
-            }
-        },
+        //         this.resetForm()
+        //         alert('Customer added successfully!')
+        //         await this.fetchCustomers() // Refresh customer list
+        //     } catch (error) {
+        //         console.error('Error submitting form:', error)
+        //         alert('Error adding customer: ' + error.message)
+        //     }
+        // },
 
         async editCustomer(customer) {
             this.isEditing = true
@@ -868,37 +974,37 @@ export default {
             this.customerData.areaId = customer.areaId // Set areaId after fetching areas
         },
 
-        async updateCustomer() {
-            try {
-                const response = await fetch(
-                    `http://localhost:5140/api/customer/${this.customerIdToEdit}`,
-                    {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem(
-                                'token'
-                            )}`,
-                        },
-                        body: JSON.stringify(this.customerData),
-                    }
-                )
+        // async updateCustomer() {
+        //     try {
+        //         const response = await fetch(
+        //             `http://localhost:5140/api/customer/${this.customerIdToEdit}`,
+        //             {
+        //                 method: 'PUT',
+        //                 headers: {
+        //                     'Content-Type': 'application/json',
+        //                     Authorization: `Bearer ${localStorage.getItem(
+        //                         'token'
+        //                     )}`,
+        //                 },
+        //                 body: JSON.stringify(this.customerData),
+        //             }
+        //         )
 
-                if (!response.ok) {
-                    const errorData = await response.json()
-                    throw new Error(
-                        errorData.message || 'Error updating customer'
-                    )
-                }
+        //         if (!response.ok) {
+        //             const errorData = await response.json()
+        //             throw new Error(
+        //                 errorData.message || 'Error updating customer'
+        //             )
+        //         }
 
-                this.resetForm()
-                alert('Customer updated successfully!')
-                await this.fetchCustomers() // Refresh customer list
-            } catch (error) {
-                console.error('Error updating customer:', error)
-                alert('Error updating customer: ' + error.message)
-            }
-        },
+        //         this.resetForm()
+        //         alert('Customer updated successfully!')
+        //         await this.fetchCustomers() // Refresh customer list
+        //     } catch (error) {
+        //         console.error('Error updating customer:', error)
+        //         alert('Error updating customer: ' + error.message)
+        //     }
+        // },
 
         async softDeleteCustomer(customerId) {
             if (!confirm('Are you sure you want to delete this customer?'))
