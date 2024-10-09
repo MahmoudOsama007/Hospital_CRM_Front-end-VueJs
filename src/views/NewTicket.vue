@@ -84,7 +84,7 @@
                     </div>
                 </div>
             </form>
-            <p>Customer Id : {{ id }}</p>
+            <!-- <p>Customer Id : {{ id }}</p> -->
 
             <br /><br /><br />
 
